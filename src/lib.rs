@@ -14,7 +14,7 @@ extern {
     fn log(s: &str);
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(start)]
 pub fn init() {
     utils::set_panic_hook();
 }

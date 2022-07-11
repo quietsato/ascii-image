@@ -1,27 +1,25 @@
 {
-  "name": "image-ascii-www",
+  "name": "www",
   "version": "0.1.0",
-  "description": "Image -> ASCII characters",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "dev": "next dev",
+    "build": "next build",
+    "export": "next build && next export",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/quietsato/image-ascii.git"
+  "dependencies": {
+    "next": "12.2.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
-  "author": "Taiki Sato <quietsato@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/quietsato/image-ascii/issues"
-  },
-  "homepage": "https://quietsato.github.io/image-ascii",
   "devDependencies": {
-    "image-ascii": "file:../pkg",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.5",
-    "copy-webpack-plugin": "^5.0.0"
+    "@types/node": "18.0.3",
+    "@types/react": "18.0.15",
+    "@types/react-dom": "18.0.6",
+    "eslint": "8.19.0",
+    "eslint-config-next": "12.2.2",
+    "typescript": "4.7.4"
   }
 }

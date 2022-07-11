@@ -66,7 +66,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: built-wasm
-          path: pkg
+          path: www/src/lib
 
       - name: Setup Node.js 
         uses: actions/setup-node@v3
@@ -80,7 +80,7 @@ jobs:
         working-directory: www
 
       - name: Build
-        run: npm run build
+        run: npm run export
         working-directory: www
 
       - name: Upload artifact
