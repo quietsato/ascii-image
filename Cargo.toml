@@ -3,6 +3,9 @@ name = "ascii-image"
 version = "0.1.0"
 authors = ["quietsato <quietsato@gmail.com>"]
 edition = "2021"
+description = "Image to ASCII characters conversion"
+repository = "https://github.com/quietsato/ascii-image"
+license-file = "LICENSE"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
