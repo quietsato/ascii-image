@@ -57,13 +57,16 @@ const Home: NextPage = () => {
     AsciiImage.init();
   }, []);
 
-  const [error, setError] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
+  const [videoSource, setVideoSource] = React.useState<string | null>(null);
 
   const inputCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const outputCanvasRef = React.useRef<HTMLCanvasElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   const onFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError("");
+    setVideoSource(null);
+    setError(null);
 
     const files = e.target.files;
     if (files === null) {
@@ -75,24 +78,59 @@ const Home: NextPage = () => {
     }
     const file = files[0];
 
-    let image;
-    try {
-      image = await createImageFromFile(file);
-    } catch (e) {
-      setError(e as string);
+    if (file.type.startsWith("image")) {
+      let image;
+      try {
+        image = await createImageFromFile(file);
+      } catch (e) {
+        setError(e as string);
+        return;
+      }
+
+      const inputCanvas = inputCanvasRef.current;
+      const outputCanvas = outputCanvasRef.current;
+      if (inputCanvas && outputCanvas) {
+        AsciiImage.drawAsciiArtFromImage(
+          image,
+          inputCanvas,
+          outputCanvas,
+          1920
+        );
+      }
+    } else if (file.type.startsWith("video")) {
+      const videoUrl = URL.createObjectURL(file);
+      setVideoSource(videoUrl);
+    }
+  };
+
+  const videoTimerCallback = () => {
+    const video = videoRef.current;
+    if (video === null) {
       return;
     }
-
+    if (video.paused || video.ended) {
+      return;
+    }
     const inputCanvas = inputCanvasRef.current;
     const outputCanvas = outputCanvasRef.current;
     if (inputCanvas && outputCanvas) {
-      AsciiImage.drawAsciiArtFromImage(
-        image,
-        inputCanvas,
-        outputCanvas,
-        1920,
-      );
+      try {
+        AsciiImage.drawAsciiArtFromVideo(video, inputCanvas, outputCanvas, 720);
+      } catch (e) {
+        if (e instanceof DOMException) {
+          // Ignore
+        } else {
+          console.error(e);
+        }
+      }
     }
+    setTimeout(() => {
+      videoTimerCallback();
+    }, 1000 / 24);
+  };
+
+  const onVideoPlay: React.ReactEventHandler<HTMLVideoElement> = async () => {
+    videoTimerCallback();
   };
 
   return (
@@ -106,6 +144,16 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <h1>Hello World</h1>
 
+        {videoSource && (
+          <video
+            className={styles.video}
+            autoPlay
+            controls
+            onPlay={onVideoPlay}
+            src={videoSource}
+            ref={videoRef}
+          />
+        )}
         <canvas className={styles.inputCanvas} ref={inputCanvasRef}></canvas>
         <canvas className={styles.outputCanvas} ref={outputCanvasRef}></canvas>
 

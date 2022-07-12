@@ -124,3 +124,8 @@
   max-width: 720px;
   max-height: 480px;
 }
+
+.video {
+  max-width: 480px;
+  max-height: 480px;
+}
