@@ -114,3 +114,13 @@
     flex-direction: column;
   }
 }
+
+.inputCanvas {
+  display: none;
+}
+
+.outputCanvas {
+  border: 1px solid black;
+  max-width: 720px;
+  max-height: 480px;
+}
