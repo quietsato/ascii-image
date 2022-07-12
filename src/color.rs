@@ -1,7 +1,14 @@
+#[derive(Debug)]
 pub struct Rgb {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Rgb {
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Self { r, g, b }
+    }
 }
 
 impl From<&Hsl> for Rgb {
@@ -39,10 +46,20 @@ impl From<&Hsl> for Rgb {
     }
 }
 
+#[derive(Debug)]
 pub struct Hsl {
     pub h: f64,
     pub s: f64,
     pub l: f64,
+}
+
+impl Hsl {
+    pub fn new(h: f64, s: f64, l: f64) -> Self {
+        let h = h.max(0.0).min(360.0 - 1e-9);
+        let s = s.max(0.0).min(1.0);
+        let l = l.max(0.0).min(1.0);
+        Self { h, s, l }
+    }
 }
 
 impl From<&Rgb> for Hsl {
@@ -87,7 +104,7 @@ mod test {
     #[test_case(0, 255, 34 => (128, 100, 100))]
     #[test_case(68, 0, 255 => (256, 100, 100))]
     fn test_rgb_to_hsl(r: u8, g: u8, b: u8) -> (u32, u32, u32) {
-        let rgb = Rgb { r, g, b };
+        let rgb = Rgb::new(r, g, b);
         let hsl = Hsl::from(&rgb);
         (hsl.h as u32, (hsl.s * 100.0) as u32, (hsl.l * 100.0) as u32)
     }
@@ -102,7 +119,7 @@ mod test {
     #[test_case(128.0, 1.0, 1.0 => (0, 255, 34))]
     #[test_case(256.0, 1.0, 1.0 => (68, 0, 255))]
     fn test_hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
-        let hsl = Hsl { h, s, l };
+        let hsl = Hsl::new(h, s, l);
         let rgb = Rgb::from(&hsl);
         (rgb.r, rgb.g, rgb.b)
     }
