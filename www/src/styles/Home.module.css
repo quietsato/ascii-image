@@ -10,6 +10,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 16px;
 }
 
 .footer {
@@ -125,7 +126,30 @@
   max-height: 480px;
 }
 
-.video {
-  max-width: 480px;
-  max-height: 480px;
+.asciiImageContainer {
+  display: block;
+}
+
+.paramConfigs {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.fileInput {
+  width: 240px;
+  height: 240px;
+}
+
+.preview {
+  max-width: 240px;
+  max-height: 120px;
+}
+
+.previewContainer {
+  text-align: center;
+}
+
+.previewContainerTitle {
+  font-weight: bold;
 }

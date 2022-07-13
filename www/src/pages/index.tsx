@@ -4,36 +4,8 @@ import styles from "../styles/Home.module.css";
 import React from "react";
 
 import * as AsciiImage from "../lib/ascii_image_bg";
-
-class PromiseFileReader {
-  private fileReader: FileReader = new FileReader();
-  readAsDataURL(blob: Blob): Promise<string | ArrayBuffer | null | undefined> {
-    return new Promise((resolve, reject) => {
-      this.fileReader.addEventListener("loadend", ({ target }) =>
-        resolve(target?.result)
-      ),
-        this.fileReader.addEventListener("error", ({ target }) =>
-          reject(target?.error)
-        );
-      this.fileReader.readAsDataURL(blob);
-    });
-  }
-}
-
-class PromiseImageElement {
-  element: HTMLImageElement = new Image();
-  loadDataUrl(dataUrl: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.element.addEventListener("load", () => {
-        resolve();
-      });
-      this.element.addEventListener("error", (error) => {
-        reject(error);
-      });
-      this.element.src = dataUrl;
-    });
-  }
-}
+import ParamConfigurator from "../components/ParamConfigurator";
+import { PromiseFileReader, PromiseImageElement } from "../utils";
 
 function createImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise(async (resolve, reject) => {
@@ -58,27 +30,37 @@ const Home: NextPage = () => {
   }, []);
 
   const [error, setError] = React.useState<string | null>(null);
+  const [imageSource, setImageSource] = React.useState<string | null>(null);
   const [videoSource, setVideoSource] = React.useState<string | null>(null);
 
+  const [outputSize, setOutputSize] = React.useState<number | null>(null);
+  const [frameRate, setFrameRate] = React.useState<number | null>(null);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const inputCanvasRef = React.useRef<HTMLCanvasElement>(null);
   const outputCanvasRef = React.useRef<HTMLCanvasElement>(null);
+  const imageRef = React.useRef<HTMLImageElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
-  const onFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const generateAscii = async () => {
+    if (outputSize === null) return;
+    if (frameRate === null) return;
+
+    const fileInput = fileInputRef.current;
+    if (fileInput === null) return;
+
+    const files = fileInput.files;
+    if (files === null) return;
+    if (files.length === 0) return;
+    const file = files[0];
+
+    setImageSource(null);
     setVideoSource(null);
     setError(null);
 
-    const files = e.target.files;
-    if (files === null) {
-      return;
-    }
-    if (files.length === 0) {
-      // No file is selected
-      return;
-    }
-    const file = files[0];
-
     if (file.type.startsWith("image")) {
+      const imageUrl = URL.createObjectURL(file);
+      setImageSource(imageUrl);
       let image;
       try {
         image = await createImageFromFile(file);
@@ -90,12 +72,15 @@ const Home: NextPage = () => {
       const inputCanvas = inputCanvasRef.current;
       const outputCanvas = outputCanvasRef.current;
       if (inputCanvas && outputCanvas) {
-        AsciiImage.drawAsciiArtFromImage(
+        const error = AsciiImage.drawAsciiArtFromImage(
           image,
           inputCanvas,
           outputCanvas,
-          1920
+          outputSize
         );
+        if (error) {
+          setError(error);
+        }
       }
     } else if (file.type.startsWith("video")) {
       const videoUrl = URL.createObjectURL(file);
@@ -104,6 +89,9 @@ const Home: NextPage = () => {
   };
 
   const videoTimerCallback = () => {
+    if (outputSize === null) return;
+    if (frameRate === null) return;
+
     const video = videoRef.current;
     if (video === null) {
       return;
@@ -115,7 +103,15 @@ const Home: NextPage = () => {
     const outputCanvas = outputCanvasRef.current;
     if (inputCanvas && outputCanvas) {
       try {
-        AsciiImage.drawAsciiArtFromVideo(video, inputCanvas, outputCanvas, 720);
+        const error = AsciiImage.drawAsciiArtFromVideo(
+          video,
+          inputCanvas,
+          outputCanvas,
+          outputSize
+        );
+        if (error) {
+          setError(error);
+        }
       } catch (e) {
         if (e instanceof DOMException) {
           // Ignore
@@ -126,49 +122,82 @@ const Home: NextPage = () => {
     }
     setTimeout(() => {
       videoTimerCallback();
-    }, 1000 / 24);
-  };
-
-  const onVideoPlay: React.ReactEventHandler<HTMLVideoElement> = async () => {
-    videoTimerCallback();
+    }, 1000 / frameRate);
   };
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Ascii Image</title>
+        <title>Ascii Image Generator</title>
         <meta name="description" content="Image → ASCII Characters" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <h1>Hello World</h1>
+        <h1>ASCII Image Generator</h1>
 
-        {videoSource && (
-          <video
-            className={styles.video}
-            autoPlay
-            controls
-            onPlay={onVideoPlay}
-            src={videoSource}
-            ref={videoRef}
+        <div className={styles.paramConfigs}>
+          <ParamConfigurator
+            name="Max Output Size"
+            default={600}
+            presets={[
+              ["600", 600],
+              ["1024", 1024],
+              ["1920", 1920],
+            ]}
+            validator={(v) => {
+              if (v <= 0) return "Output size must be greater than 0";
+              return null;
+            }}
+            onChange={setOutputSize}
           />
-        )}
-        <canvas className={styles.inputCanvas} ref={inputCanvasRef}></canvas>
-        <canvas className={styles.outputCanvas} ref={outputCanvasRef}></canvas>
+          <ParamConfigurator
+            name="Frame Rate"
+            default={24}
+            presets={[
+              ["10Hz", 10],
+              ["24Hz", 24],
+              ["60Hz", 60],
+            ]}
+            validator={(v) => {
+              if (v <= 0) return "Frame rate must be greater than 0";
+              return null;
+            }}
+            onChange={setFrameRate}
+          />
+        </div>
+
+        <canvas className={styles.inputCanvas} ref={inputCanvasRef} />
+        <canvas className={styles.outputCanvas} ref={outputCanvasRef} />
+
+        {error && <p className={styles.error}>{error}</p>}
+        <button onClick={generateAscii}>Regenerate</button>
+
+        <div className={styles.previewContainer}>
+          <div className={styles.previewContainerTitle}>Preview</div>
+          {imageSource && (
+            <img className={styles.preview} src={imageSource} ref={imageRef} />
+          )}
+          {videoSource && (
+            <video
+              className={styles.preview}
+              autoPlay
+              controls
+              onPlay={videoTimerCallback}
+              src={videoSource}
+              ref={videoRef}
+            />
+          )}
+        </div>
 
         <input
           type="file"
           name="file-input"
-          id="file-input"
           accept="image/*,video/*"
-          onChange={onFileInputChange}
+          ref={fileInputRef}
+          onChange={generateAscii}
         />
-
-        {error && <p className={styles.error}>{error}</p>}
       </main>
-
-      <footer className={styles.footer}></footer>
     </div>
   );
 };
