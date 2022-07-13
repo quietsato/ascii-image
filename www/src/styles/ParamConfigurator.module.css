@@ -1,0 +1,10 @@
+.customInputContainer {
+    display: block;
+
+}
+.customValueInput {
+    width: 100px;
+}
+.paramName {
+    font-weight: bold;
+}
