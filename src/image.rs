@@ -48,7 +48,7 @@ pub fn draw_ascii_art_from_image(
     Ok(())
 }
 
-fn generate_ascii_image_vec(data: &[u8], width: usize, height: usize) -> Result<Vec<u8>, JsValue> {
+pub fn generate_ascii_image_vec(data: &[u8], width: usize, height: usize) -> Result<Vec<u8>, JsValue> {
     let mut dest_data = vec![0u8; width * height * 4]; // RGBA
 
     for y in (0..height).step_by(FONT_HEIGHT) {
@@ -82,7 +82,7 @@ fn generate_ascii_image_vec(data: &[u8], width: usize, height: usize) -> Result<
     Ok(dest_data)
 }
 
-fn calc_image_size(w: u32, h: u32, size_max: u32) -> (u32, u32) {
+pub fn calc_image_size(w: u32, h: u32, size_max: u32) -> (u32, u32) {
     let (w, h) = if w >= h {
         let (wf, hf) = (w as f64, h as f64);
         (
@@ -100,6 +100,9 @@ fn calc_image_size(w: u32, h: u32, size_max: u32) -> (u32, u32) {
     (w - w % FONT_WIDTH as u32, h - h % FONT_HEIGHT as u32)
 }
 
+// -------------------------------------------------------------------------------------------------
+// Private
+// -------------------------------------------------------------------------------------------------
 fn calc_mean_hsl(
     data: &[u8],
     sx: usize,

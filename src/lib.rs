@@ -3,6 +3,7 @@ mod color;
 mod font;
 mod image;
 mod utils;
+mod video;
 
 use font::{Font, FontSortByLightness};
 use once_cell::sync::OnceCell;

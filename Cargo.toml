@@ -43,6 +43,7 @@ features = [
     "HtmlCanvasElement",
     "HtmlImageElement",
     "HtmlInputElement",
+    "HtmlVideoElement",
     "ImageData",
     "Window",
 ]
