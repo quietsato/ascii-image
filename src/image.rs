@@ -13,8 +13,11 @@ pub fn draw_ascii_art_from_image(
     src_canvas: web_sys::HtmlCanvasElement,
     dest_canvas: web_sys::HtmlCanvasElement,
     size_max: u32,
-) -> Result<(), JsValue> {
+) -> Result<Option<String>, JsValue> {
     let (width, height) = calc_image_size(image.width(), image.height(), size_max);
+    if width == 0 || height == 0 {
+        return Ok(Some("Output size is too small".into()))
+    }
 
     let src_image_data = {
         let context = CanvasRenderingContext::from_canvas(&src_canvas)?;
@@ -45,7 +48,7 @@ pub fn draw_ascii_art_from_image(
     context.put_image_data(&image_data, 0.0, 0.0)?;
     context.set_image_smoothing_enabled(false);
 
-    Ok(())
+    Ok(None)
 }
 
 pub fn generate_ascii_image_vec(data: &[u8], width: usize, height: usize) -> Result<Vec<u8>, JsValue> {

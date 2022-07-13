@@ -11,8 +11,11 @@ pub fn draw_ascii_art_from_video(
     src_canvas: web_sys::HtmlCanvasElement,
     dest_canvas: web_sys::HtmlCanvasElement,
     size_max: u32,
-) -> Result<(), JsValue> {
+) -> Result<Option<String>, JsValue> {
     let (width, height) = calc_image_size(video.video_width(), video.video_height(), size_max);
+    if width == 0 || height == 0 {
+        return Ok(Some("Output size is too small".into()));
+    }
 
     let src_image_data = {
         let context = CanvasRenderingContext::from_canvas(&src_canvas)?;
@@ -43,5 +46,5 @@ pub fn draw_ascii_art_from_video(
     context.put_image_data(&image_data, 0.0, 0.0)?;
     context.set_image_smoothing_enabled(false);
 
-    Ok(())
+    Ok(None)
 }
