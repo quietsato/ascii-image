@@ -37,23 +37,27 @@ impl Font {
         static FONT_JSON: &str = include_str!("../font/monogram-bitmap.json");
         let obj: Value = serde_json::from_str(FONT_JSON).unwrap();
 
-        Self(BTreeMap::from_iter(obj.as_object().unwrap().iter().map(
-            |(c, v)| {
+        Self(BTreeMap::from_iter(
+            obj.as_object().unwrap().iter().filter_map(|(c, v)| {
                 let c = c.chars().next().unwrap();
-                let v = v
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .flat_map(|v| {
-                        let v = v.as_u64().unwrap();
-                        (0..FONT_WIDTH).map(move |i| ((v & (1 << i)) > 0) as u8)
-                    })
-                    .collect::<Vec<_>>()
-                    .try_into()
-                    .unwrap();
-                (c, v)
-            },
-        )))
+                if c.is_ascii() {
+                    let v = v
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .flat_map(|v| {
+                            let v = v.as_u64().unwrap();
+                            (0..FONT_WIDTH).map(move |i| ((v & (1 << i)) > 0) as u8)
+                        })
+                        .collect::<Vec<_>>()
+                        .try_into()
+                        .unwrap();
+                    Some((c, v))
+                } else {
+                    None
+                }
+            }),
+        ))
     }
 }
 
