@@ -16,7 +16,7 @@ pub fn draw_ascii_art_from_image(
 ) -> Result<Option<String>, JsValue> {
     let (width, height) = calc_image_size(image.width(), image.height(), size_max);
     if width == 0 || height == 0 {
-        return Ok(Some("Output size is too small".into()))
+        return Ok(Some("Output size is too small".into()));
     }
 
     let src_image_data = {
@@ -51,7 +51,11 @@ pub fn draw_ascii_art_from_image(
     Ok(None)
 }
 
-pub fn generate_ascii_image_vec(data: &[u8], width: usize, height: usize) -> Result<Vec<u8>, JsValue> {
+pub fn generate_ascii_image_vec(
+    data: &[u8],
+    width: usize,
+    height: usize,
+) -> Result<Vec<u8>, JsValue> {
     let mut dest_data = vec![0u8; width * height * 4]; // RGBA
 
     for y in (0..height).step_by(FONT_HEIGHT) {
